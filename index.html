@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PrintFlow365 | Price Tag Catalog</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+color:#222;
+}
+
+header{
+background:#111;
+color:#fff;
+padding:15px;
+text-align:center;
+}
+
+header h1{
+font-size:24px;
+}
+
+header p{
+font-size:14px;
+margin-top:5px;
+}
+
+.container{
+padding:12px;
+}
+
+#search{
+width:100%;
+padding:12px;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:16px;
+margin-bottom:15px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+}
+
+.card{
+background:#fff;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+
+.card img{
+width:100%;
+display:block;
+}
+
+.info{
+padding:10px;
+}
+
+.code{
+font-weight:bold;
+font-size:15px;
+margin-bottom:5px;
+}
+
+.name{
+font-size:14px;
+margin-bottom:10px;
+}
+
+.whatsapp{
+display:block;
+text-align:center;
+background:#25D366;
+color:#fff;
+padding:10px;
+text-decoration:none;
+border-radius:6px;
+font-weight:bold;
+}
+
+footer{
+padding:20px;
+text-align:center;
+font-size:13px;
+color:#666;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+<h1>PrintFlow365</h1>
+<p>Price Tag Catalog</p>
+</header>
+
+<div class="container">
+
+<input
+type="text"
+id="search"
+placeholder="Search Product Code...">
+
+<div id="products" class="grid"></div>
+
+</div>
+
+<footer>
+
+WhatsApp:
+<a href="https://wa.me/971527581014">
++971527581014
+</a>
+
+</footer>
+
+<script>
+
+let allProducts=[];
+
+fetch("products.json")
+.then(r=>r.json())
+.then(data=>{
+
+allProducts=data;
+
+showProducts(data);
+
+});
+
+function showProducts(list){
+
+let html="";
+
+list.forEach(p=>{
+
+html+=`
+
+<div class="card">
+
+<img src="images/${p.image}" alt="${p.code}">
+
+<div class="info">
+
+<div class="code">${p.code}</div>
+
+<div class="name">${p.name}</div>
+
+<a class="whatsapp"
+href="https://wa.me/971527581014?text=Hello%20I%20want%20${p.code}">
+Order on WhatsApp
+</a>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("products").innerHTML=html;
+
+}
+
+document.getElementById("search").addEventListener("keyup",function(){
+
+let keyword=this.value.toLowerCase();
+
+let filtered=allProducts.filter(p=>
+
+p.code.toLowerCase().includes(keyword) ||
+
+p.name.toLowerCase().includes(keyword)
+
+);
+
+showProducts(filtered);
+
+});
+
+</script>
+
+</body>
+</html>
