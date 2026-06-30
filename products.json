@@ -1,0 +1,17 @@
+[
+  {
+    "code":"Tag001",
+    "name":"Price Tag 001",
+    "image":"Tag001.jpg"
+  },
+  {
+    "code":"Tag002",
+    "name":"Price Tag 002",
+    "image":"Tag002.jpg"
+  },
+  {
+    "code":"Tag003",
+    "name":"Price Tag 003",
+    "image":"Tag003.jpg"
+  }
+]
