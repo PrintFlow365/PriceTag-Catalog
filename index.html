@@ -1,263 +1,283 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>PrintFlow365 Catalog V2.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PrintFlow365 Catalog V3.0</title>
 
 <style>
-body {
-    font-family: Arial;
-    margin: 0;
-    background: #f4f6f9;
-}
-<div style="padding:10px;text-align:center;">
-    <select id="customer" style="padding:8px;width:95%;">
-        <option value="Unknown|0000000000">Select Customer</option>
-        <option value="Rishi-Asdiqa|+971 52 944 0881">Rishi-Asdiqa</option>
-        <option value="Binoy Thomas|+971 50 795 7882">Binoy Thomas-Asdiqa</option>
-        <option value="Ahmed Brother-Landstock|+971 58 197 0433">Ahmed Brother-Landstock</option>
-        <option value="Basam Vai-Landstock|+971 54 238 0053">Balsam Vai-Landstock</option>
-        <option value="Majid Vai Irani|+971 55 866 1020">Majid Vai Irani</option>
-<option value="Monir Vai Ind.4|+971524818722">Monir Vai Ind.4</option>
-<option value="Shamim|+971568923470">Shamim</option>
-    </select>
-</div>
-header {
-    background: #111827;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 20px;
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#f5f5f5}
+
+/* HEADER */
+header{
+  background:#111;
+  color:#fff;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
-.search-box {
-    padding: 10px;
-    text-align: center;
+header h1{font-size:18px}
+
+#searchBar{
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  width:100%;
 }
 
-.search-box input {
-    width: 95%;
-    padding: 10px;
-    font-size: 16px;
+.container{padding:10px}
+
+.filter-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
-.container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-    padding: 10px;
+select{
+  flex:1;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
 }
 
-.card {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    text-align: center;
+/* GRID */
+#productGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:10px;
 }
 
-.card img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
+.product{
+  background:#fff;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
-.price {
-    color: green;
-    font-weight: bold;
+.product img{
+  width:100%;
+  height:140px;
+  object-fit:contain;
+  background:#fff;
 }
 
-.qty {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 5px;
-}
+.product-content{padding:8px}
+.product-title{font-size:14px}
+.price{color:green;font-weight:bold;margin-top:5px}
 
-.qty button {
-    padding: 3px 10px;
-    border: none;
-    background: #111827;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.category-title {
-    padding: 10px;
-    font-weight: bold;
-    font-size: 18px;
-    background: #e5e7eb;
-}
-
-.cart-bar {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #111827;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    align-items: center;
-}
-
-button.order {
-    background: #22c55e;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    color: white;
+button{
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<header>PrintFlow365 Catalog V3.0</header>
+<header>
+  <h1>PrintFlow365 Catalog</h1>
+  <input type="text" id="searchBar" placeholder="Search products...">
 
-<div class="search-box">
-<input type="text" id="search" placeholder="Search products...">
-</div>
+  <div class="filter-row">
+    <select id="categoryFilter">
+      <option value="">All Category</option>
+    </select>
 
-<div id="productList"></div>
+    <select id="subCategoryFilter">
+      <option value="">All Subcategory</option>
+    </select>
+  </div>
+</header>
 
-<div class="cart-bar">
-<div id="summary">Items: 0 | Total: 0 AED</div>
-<button class="order" onclick="sendWhatsApp()">Order</button>
+<div class="container">
+
+  <!-- CUSTOMER -->
+  <select id="customerSelect" style="width:100%;padding:10px;margin-bottom:10px;">
+     <option value="Rishi Asdiqa|+971 52 944 0881">Rishi Asdiqa</option>
+        <option value="Binoy Thomas Asdiqa|+971 50 795 7882">Binoy Thomas Asdiqa</option>
+        <option value="Ahmed Brother Landstock|+971 58 197 0433">Ahmed Brother Landstock</option>
+        <option value="Basam Vai Landstock|+971 54 238 0053">Balsam Vai Landstock</option>
+        <option value="Majid Vai Irani|+971 55 866 1020">Majid Vai Irani</option>
+<option value="Monir Vai Ind|+971524818722">Monir Vai Ind</option>
+<option value="Shamim|+971568923470">Shamim</option>
+    </select>
+
+  <div id="productGrid"></div>
+
+  <button onclick="sendWhatsAppOrder()" style="
+    width:100%;
+    margin-top:10px;
+    padding:12px;
+    background:green;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+  ">
+    Send WhatsApp Order
+  </button>
+
 </div>
 
 <script>
-let cart = {};
+
 let products = [];
+let filteredProducts = [];
+let cart = [];
 
+/* SAFE ID */
+function safeId(str){
+  return str.replace(/[^a-zA-Z0-9]/g,"_");
+}
+
+/* FETCH */
 fetch("products.json")
-.then(res => res.json())
-.then(data => {
-    products = data;
-    render(products);
+.then(res=>res.json())
+.then(data=>{
+  products = data;
+  filteredProducts = data;
+  populateFilters();
+  renderProducts();
 });
 
-function render(list) {
-    const container = document.getElementById("productList");
-    container.innerHTML = "";
+/* FILTERS */
+document.getElementById("searchBar").addEventListener("input",applyFilters);
+document.getElementById("categoryFilter").addEventListener("change",applyFilters);
+document.getElementById("subCategoryFilter").addEventListener("change",applyFilters);
 
-    // STEP 1: group (category → subcategory)
-    const grouped = {};
+function applyFilters(){
+  let search = document.getElementById("searchBar").value.toLowerCase();
+  let cat = document.getElementById("categoryFilter").value;
+  let sub = document.getElementById("subCategoryFilter").value;
 
-    list.forEach((p, i) => {
-        const cat = p.category || "Uncategorized";
-        const sub = p.subcategory || "General";
+  filteredProducts = products.filter(p=>{
+    return (!search || p.name.toLowerCase().includes(search)) &&
+           (!cat || p.category===cat) &&
+           (!sub || p.subcategory===sub);
+  });
 
-        if (!grouped[cat]) grouped[cat] = {};
-        if (!grouped[cat][sub]) grouped[cat][sub] = [];
-
-        grouped[cat][sub].push({
-            ...p,
-            index: i
-        });
-    });
-
-    // STEP 2: render UI
-    Object.keys(grouped).forEach(category => {
-
-        container.innerHTML += `
-            <div class="category-title">${category}</div>
-        `;
-
-        Object.keys(grouped[category]).forEach(subcategory => {
-
-            container.innerHTML += `
-                <div style="padding:8px 10px;font-weight:bold;background:#e5e7eb;">
-                    → ${subcategory}
-                </div>
-            `;
-
-            grouped[category][subcategory].forEach(p => {
-
-                container.innerHTML += `
-                    <div class="card">
-                        <img src="images/${p.image}" alt="${p.name}">
-                        <h4>${p.name}</h4>
-                        <div class="price">${p.price} AED</div>
-
-                        <div class="qty">
-    <input type="number"
-        id="q_${p.index}"
-        value="0"
-        min="0"
-        step="1"
-        style="width:80px;text-align:center;padding:5px;"
-        onchange="setQty(${p.index}, this.value)"
-    >
-</div>
-                    </div>
-                `;
-            });
-        });
-    });
-
-    updateUI();
-}
-function changeQty(i, val) {
-    if (!cart[i]) cart[i] = 0;
-    cart[i] += val;
-
-    if (cart[i] < 0) cart[i] = 0;
-
-    document.getElementById("q_" + i).innerText = cart[i];
-    updateUI();
+  renderProducts();
 }
 
-function updateUI() {
-    let totalItems = 0;
-    let totalPrice = 0;
+/* FILTER OPTIONS */
+function populateFilters(){
+  let catSet = new Set();
+  let subSet = new Set();
 
-    Object.keys(cart).forEach(i => {
-        let qty = cart[i];
-        totalItems += qty;
-        totalPrice += qty * products[i].price;
-    });
+  products.forEach(p=>{
+    catSet.add(p.category);
+    subSet.add(p.subcategory);
+  });
 
-    document.getElementById("summary").innerText =
-        `Items: ${totalItems} | Total: ${totalPrice} AED`;
+  let cat=document.getElementById("categoryFilter");
+  let sub=document.getElementById("subCategoryFilter");
+
+  catSet.forEach(c=>{
+    cat.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+
+  subSet.forEach(s=>{
+    sub.innerHTML += `<option value="${s}">${s}</option>`;
+  });
 }
 
-document.getElementById("search").addEventListener("input", function() {
-    let val = this.value.toLowerCase();
+/* CARD */
+function createProductCard(p){
 
-    let filtered = products.filter(p =>
-        p.name.toLowerCase().includes(val) ||
-        p.category.toLowerCase().includes(val)
-    );
+  return `
+  <div class="product">
+    <img src="${p.image}">
+    <div class="product-content">
+      <div class="product-title">${p.name}</div>
+      <div class="price">${p.price}</div>
 
-    render(filtered);
-});
+      <input type="number" min="1" value="1"
+        id="qty_${safeId(p.name)}"
+        style="width:60px;margin-top:6px;">
 
-function sendWhatsApp() {
-    let msg = "Order from PrintFlow365:%0A";
-let customer = document.getElementById("customer").value;
-let [name, phone] = customer.split("|");
-    let total = 0;
-
-    Object.keys(cart).forEach(i => {
-        let qty = cart[i];
-        if (qty > 0) {
-            msg += `${products[i].name} x ${qty}%0A`;
-            total += qty * products[i].price;
-        }
-    });
-
-    msg += `%0ATotal: ${total} AED`;
-
-    let phone = "971527581014";
-    window.open("https://wa.me/" + phone + "?text=" + msg, "_blank");
+      <button onclick="addToCart('${p.name}')"
+        style="width:100%;margin-top:6px;padding:6px;background:#111;color:#fff;border:none;border-radius:5px;">
+        Add to Cart
+      </button>
+    </div>
+  </div>`;
 }
+
+/* RENDER */
+function renderProducts(){
+  let grid=document.getElementById("productGrid");
+  grid.innerHTML="";
+
+  if(filteredProducts.length===0){
+    grid.innerHTML="<p>No products found</p>";
+    return;
+  }
+
+  filteredProducts.forEach(p=>{
+    grid.innerHTML += createProductCard(p);
+  });
+}
+
+/* CART */
+function addToCart(name){
+
+  let product = products.find(p=>p.name===name);
+  if(!product) return;
+
+  let qty = parseInt(document.getElementById("qty_"+safeId(name)).value || 1);
+
+  let existing = cart.find(i=>i.name===name);
+
+  if(existing){
+    existing.qty += qty;
+  }else{
+    cart.push({
+      name:product.name,
+      price:product.price,
+      qty:qty,
+      image:product.image
+    });
+  }
+
+  alert("Added to cart!");
+}
+
+/* WHATSAPP */
+function sendWhatsAppOrder(){
+
+  let customer = document.getElementById("customerSelect").value;
+
+  if(!customer){
+    alert("Select customer");
+    return;
+  }
+
+  if(cart.length===0){
+    alert("Cart empty");
+    return;
+  }
+
+  let msg="🧾 PrintFlow365 Order\n";
+  msg+="Customer: "+customer+"\n\n";
+
+  let total=0;
+
+  cart.forEach((c,i)=>{
+    total+=c.qty;
+    msg+=`${i+1}. ${c.name}\nQty:${c.qty}\n\n`;
+  });
+
+  msg+="Total Items: "+total;
+
+  let phone="971527581014";
+  let url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
+
+  window.open(url,"_blank");
+}
+
 </script>
 
 </body>
