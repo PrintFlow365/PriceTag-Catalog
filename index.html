@@ -187,10 +187,15 @@ function render(list) {
                         <div class="price">${p.price} AED</div>
 
                         <div class="qty">
-                            <button onclick="changeQty(${p.index}, -1)">-</button>
-                            <span id="q_${p.index}">0</span>
-                            <button onclick="changeQty(${p.index}, 1)">+</button>
-                        </div>
+    <input type="number"
+        id="q_${p.index}"
+        value="0"
+        min="0"
+        step="1"
+        style="width:80px;text-align:center;padding:5px;"
+        onchange="setQty(${p.index}, this.value)"
+    >
+</div>
                     </div>
                 `;
             });
