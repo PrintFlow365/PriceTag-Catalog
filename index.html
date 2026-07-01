@@ -1,283 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>PrintFlow365 Catalog V2.1</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrintFlow365 V3.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#f5f5f5}
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
-/* HEADER */
-header{
-  background:#111;
-  color:#fff;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-header h1{font-size:18px}
-
-#searchBar{
-  padding:10px;
-  border:none;
-  border-radius:6px;
-  width:100%;
-}
-
-.container{padding:10px}
-
-.filter-row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-select{
-  flex:1;
-  padding:8px;
-  border-radius:6px;
-  border:1px solid #ccc;
-}
-
-/* GRID */
-#productGrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  margin-top:10px;
-}
-
-.product{
-  background:#fff;
-  border-radius:8px;
-  overflow:hidden;
-  box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
-
-.product img{
-  width:100%;
-  height:140px;
-  object-fit:contain;
-  background:#fff;
-}
-
-.product-content{padding:8px}
-.product-title{font-size:14px}
-.price{color:green;font-weight:bold;margin-top:5px}
-
-button{
-  cursor:pointer;
-}
-</style>
+  <style>
+    body { font-family: Arial; padding: 10px; }
+    .box { max-width: 400px; margin: auto; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; }
+    .hidden { display: none; }
+  </style>
 </head>
 
 <body>
 
-<header>
-  <h1>PrintFlow365 Catalog</h1>
-  <input type="text" id="searchBar" placeholder="Search products...">
+<div id="loginBox" class="box">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
 
-  <div class="filter-row">
-    <select id="categoryFilter">
-      <option value="">All Category</option>
-    </select>
+<div id="app" class="hidden box">
+  <h3>Welcome, <span id="userName"></span></h3>
 
-    <select id="subCategoryFilter">
-      <option value="">All Subcategory</option>
-    </select>
-  </div>
-</header>
+  <h4>Order Products</h4>
+  <input id="product" placeholder="Product name">
+  <input id="qty" placeholder="Quantity">
+  <button onclick="placeOrder()">Send WhatsApp Order</button>
 
-<div class="container">
+  <h4>Your Orders</h4>
+  <div id="orders"></div>
 
-  <!-- CUSTOMER -->
-  <select id="customerSelect" style="width:100%;padding:10px;margin-bottom:10px;">
-     <option value="Rishi Asdiqa|+971 52 944 0881">Rishi Asdiqa</option>
-        <option value="Binoy Thomas Asdiqa|+971 50 795 7882">Binoy Thomas Asdiqa</option>
-        <option value="Ahmed Brother Landstock|+971 58 197 0433">Ahmed Brother Landstock</option>
-        <option value="Basam Vai Landstock|+971 54 238 0053">Balsam Vai Landstock</option>
-        <option value="Majid Vai Irani|+971 55 866 1020">Majid Vai Irani</option>
-<option value="Monir Vai Ind|+971524818722">Monir Vai Ind</option>
-<option value="Shamim|+971568923470">Shamim</option>
-    </select>
-
-  <div id="productGrid"></div>
-
-  <button onclick="sendWhatsAppOrder()" style="
-    width:100%;
-    margin-top:10px;
-    padding:12px;
-    background:green;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    font-size:16px;
-  ">
-    Send WhatsApp Order
-  </button>
-
+  <button onclick="logout()">Logout</button>
 </div>
 
 <script>
+  const firebaseConfig = {
+  apiKey: "AIzaSy....",
+  authDomain: "printflow365.firebaseapp.com",
+  projectId: "printflow365",
+  storageBucket: "printflow365.appspot.com",
+  messagingSenderId: "752851933522",
+  appId: "1:752851933522:web:cb71d642a8b7ccf49ec28b"
+};
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-let products = [];
-let filteredProducts = [];
-let cart = [];
+  let currentUser = null;
 
-/* SAFE ID */
-function safeId(str){
-  return str.replace(/[^a-zA-Z0-9]/g,"_");
-}
+  function login() {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
 
-/* FETCH */
-fetch("products.json")
-.then(res=>res.json())
-.then(data=>{
-  products = data;
-  filteredProducts = data;
-  populateFilters();
-  renderProducts();
-});
-
-/* FILTERS */
-document.getElementById("searchBar").addEventListener("input",applyFilters);
-document.getElementById("categoryFilter").addEventListener("change",applyFilters);
-document.getElementById("subCategoryFilter").addEventListener("change",applyFilters);
-
-function applyFilters(){
-  let search = document.getElementById("searchBar").value.toLowerCase();
-  let cat = document.getElementById("categoryFilter").value;
-  let sub = document.getElementById("subCategoryFilter").value;
-
-  filteredProducts = products.filter(p=>{
-    return (!search || p.name.toLowerCase().includes(search)) &&
-           (!cat || p.category===cat) &&
-           (!sub || p.subcategory===sub);
-  });
-
-  renderProducts();
-}
-
-/* FILTER OPTIONS */
-function populateFilters(){
-  let catSet = new Set();
-  let subSet = new Set();
-
-  products.forEach(p=>{
-    catSet.add(p.category);
-    subSet.add(p.subcategory);
-  });
-
-  let cat=document.getElementById("categoryFilter");
-  let sub=document.getElementById("subCategoryFilter");
-
-  catSet.forEach(c=>{
-    cat.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-
-  subSet.forEach(s=>{
-    sub.innerHTML += `<option value="${s}">${s}</option>`;
-  });
-}
-
-/* CARD */
-function createProductCard(p){
-
-  return `
-  <div class="product">
-    <img src="${p.image}">
-    <div class="product-content">
-      <div class="product-title">${p.name}</div>
-      <div class="price">${p.price}</div>
-
-      <input type="number" min="1" value="1"
-        id="qty_${safeId(p.name)}"
-        style="width:60px;margin-top:6px;">
-
-      <button onclick="addToCart('${p.name}')"
-        style="width:100%;margin-top:6px;padding:6px;background:#111;color:#fff;border:none;border-radius:5px;">
-        Add to Cart
-      </button>
-    </div>
-  </div>`;
-}
-
-/* RENDER */
-function renderProducts(){
-  let grid=document.getElementById("productGrid");
-  grid.innerHTML="";
-
-  if(filteredProducts.length===0){
-    grid.innerHTML="<p>No products found</p>";
-    return;
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(user => {
+        currentUser = user.user;
+        loadApp();
+      })
+      .catch(err => alert(err.message));
   }
 
-  filteredProducts.forEach(p=>{
-    grid.innerHTML += createProductCard(p);
-  });
-}
+  function loadApp() {
+    document.getElementById('loginBox').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
 
-/* CART */
-function addToCart(name){
+    document.getElementById('userName').innerText = currentUser.email;
 
-  let product = products.find(p=>p.name===name);
-  if(!product) return;
+    loadOrders();
+  }
 
-  let qty = parseInt(document.getElementById("qty_"+safeId(name)).value || 1);
+  function placeOrder() {
+    let product = document.getElementById('product').value;
+    let qty = document.getElementById('qty').value;
 
-  let existing = cart.find(i=>i.name===name);
+    let msg = `Customer: ${currentUser.email}\nProduct: ${product}\nQty: ${qty}`;
 
-  if(existing){
-    existing.qty += qty;
-  }else{
-    cart.push({
-      name:product.name,
-      price:product.price,
-      qty:qty,
-      image:product.image
+    // WhatsApp send
+    window.open(`https://wa.me/971527581014?text=${encodeURIComponent(msg)}`);
+
+    // Save order
+    db.collection("orders").add({
+      email: currentUser.email,
+      product: product,
+      qty: qty,
+      time: new Date()
     });
+
+    loadOrders();
   }
 
-  alert("Added to cart!");
-}
-
-/* WHATSAPP */
-function sendWhatsAppOrder(){
-
-  let customer = document.getElementById("customerSelect").value;
-
-  if(!customer){
-    alert("Select customer");
-    return;
+  function loadOrders() {
+    db.collection("orders")
+      .where("email", "==", currentUser.email)
+      .get()
+      .then(snapshot => {
+        let html = "";
+        snapshot.forEach(doc => {
+          let d = doc.data();
+          html += `<p>${d.product} - ${d.qty}</p>`;
+        });
+        document.getElementById('orders').innerHTML = html;
+      });
   }
 
-  if(cart.length===0){
-    alert("Cart empty");
-    return;
+  function logout() {
+    auth.signOut();
+    location.reload();
   }
-
-  let msg="🧾 PrintFlow365 Order\n";
-  msg+="Customer: "+customer+"\n\n";
-
-  let total=0;
-
-  cart.forEach((c,i)=>{
-    total+=c.qty;
-    msg+=`${i+1}. ${c.name}\nQty:${c.qty}\n\n`;
-  });
-
-  msg+="Total Items: "+total;
-
-  let phone="971527581014";
-  let url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
-
-  window.open(url,"_blank");
-}
-
 </script>
 
 </body>
