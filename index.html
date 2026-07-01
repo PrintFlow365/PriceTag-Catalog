@@ -13,7 +13,18 @@ body {
     margin: 0;
     background: #f4f6f9;
 }
-
+<div style="padding:10px;text-align:center;">
+    <select id="customer" style="padding:8px;width:95%;">
+        <option value="Unknown|0000000000">Select Customer</option>
+        <option value="Rishi-Asdiqa|+971 52 944 0881">Rishi-Asdiqa</option>
+        <option value="Binoy Thomas|+971 50 795 7882">Binoy Thomas-Asdiqa</option>
+        <option value="Ahmed Brother-Landstock|+971 58 197 0433">Ahmed Brother-Landstock</option>
+        <option value="Basam Vai-Landstock|+971 54 238 0053">Balsam Vai-Landstock</option>
+        <option value="Majid Vai Irani|+971 55 866 1020">Majid Vai Irani</option>
+<option value="Monir Vai Ind.4|+971524818722">Monir Vai Ind.4</option>
+<option value="Shamim|+971568923470">Shamim</option>
+    </select>
+</div>
 header {
     background: #111827;
     color: white;
@@ -225,6 +236,8 @@ document.getElementById("search").addEventListener("input", function() {
 
 function sendWhatsApp() {
     let msg = "Order from PrintFlow365:%0A";
+let customer = document.getElementById("customer").value;
+let [name, phone] = customer.split("|");
     let total = 0;
 
     Object.keys(cart).forEach(i => {
