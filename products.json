@@ -13,5 +13,53 @@
     "code":"Tag003",
     "name":"Price Tag 003",
     "image":"Tag003.jpg"
+  },
+  {
+    "name": "Nike Classic Price Tag",
+    "price": 30,
+    "image": "nike1.jpg",
+    "category": "Printing / Branding Materials & Accessories",
+    "subcategory": "Price Tag",
+    "brand": "Nike"
+  },
+  {
+    "name": "Nike Premium Gold Tag",
+    "price": 40,
+    "image": "nike2.jpg",
+    "category": "Printing / Branding Materials & Accessories",
+    "subcategory": "Price Tag",
+    "brand": "Nike"
+  },
+  {
+    "name": "Zara Minimal Tag",
+    "price": 35,
+    "image": "zara1.jpg",
+    "category": "Printing / Branding Materials & Accessories",
+    "subcategory": "Price Tag",
+    "brand": "Zara"
+  },
+  {
+    "name": "Mango Basic Tag",
+    "price": 28,
+    "image": "mango1.jpg",
+    "category": "Printing / Branding Materials & Accessories",
+    "subcategory": "Price Tag",
+    "brand": "Mango"
+  },
+  {
+    "name": "Leather Wallet Embossed",
+    "price": 120,
+    "image": "wallet.jpg",
+    "category": "Custom Goods & Accessories",
+    "subcategory": "Leather Goods",
+    "brand": "Custom"
+  },
+  {
+    "name": "Non Woven Bag Print",
+    "price": 20,
+    "image": "bag.jpg",
+    "category": "Custom Goods & Accessories",
+    "subcategory": "Non-woven Bags & Covers",
+    "brand": "Custom"
   }
 ]
