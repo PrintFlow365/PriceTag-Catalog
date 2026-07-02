@@ -1,61 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PrintFlow365 V4.0</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+<meta charset="UTF-8">
+<title>PrintFlow365 V4.0</title>
 
-  <style>
-    body { font-family: Arial; margin: 0; background: #f5f5f5; }
-    header { background: #111; color: #fff; padding: 10px; text-align: center; }
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      padding: 10px;
-      flex-wrap: wrap;
-      background: #fff;
-    }
+<style>
+body { font-family: Arial; margin: 0; background:#f5f5f5; }
 
-    input, select {
-      padding: 8px;
-      flex: 1;
-      min-width: 120px;
-    }
+header {
+  background:#111;
+  color:white;
+  padding:10px;
+  text-align:center;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 10px;
-      padding: 10px;
-    }
+.controls{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  flex-wrap:wrap;
+  background:white;
+}
 
-    .card {
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
-    }
+input, select{
+  padding:10px;
+  flex:1;
+  min-width:120px;
+  border:1px solid #ccc;
+  border-radius:5px;
+}
 
-    .card img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 5px;
-    }
+input:focus, select:focus{
+  border:2px solid green;
+  outline:none;
+}
 
-    .price {
-      color: green;
-      font-weight: bold;
-    }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+  padding:10px;
+}
 
-    button {
-      width: 100%;
-      padding: 6px;
-      margin-top: 5px;
-    }
-  </style>
+.card{
+  background:white;
+  padding:10px;
+  border-radius:10px;
+}
+
+.card img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+  border-radius:5px;
+}
+
+.price{
+  color:green;
+  font-weight:bold;
+}
+
+button{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
 <header>
@@ -77,91 +93,98 @@
 <div class="grid" id="products"></div>
 
 <script>
-  // Firebase config (fill your own)
-  const firebaseConfig = {
-    apiKey: "YOUR_KEY",
-    authDomain: "YOUR_DOMAIN",
-    projectId: "YOUR_PROJECT",
-  };
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  let allProducts = [];
+let allProducts = [];
 
-  // Load products
-  async function loadProducts() {
-    const snap = await db.collection("products").get();
-    allProducts = snap.docs.map(doc => doc.data());
-    render(allProducts);
-    fillFilters(allProducts);
-  }
+// Load products
+async function loadProducts(){
+  const snap = await db.collection("products").get();
+  allProducts = snap.docs.map(d => d.data());
+  render(allProducts);
+  fillFilters(allProducts);
+}
 
-  function render(list) {
-    const box = document.getElementById("products");
-    box.innerHTML = "";
+// Render products
+function render(list){
+  const box = document.getElementById("products");
+  box.innerHTML = "";
 
-    list.forEach(p => {
-      const img = (p.images && p.images.length) ? p.images[0] : "";
+  list.forEach(p => {
+    const img = p.images?.[0] || "";
 
-      box.innerHTML += `
-        <div class="card">
-          <img src="${img}" />
-          <h4>${p.name}</h4>
-          <p>${p.category} / ${p.subcategory}</p>
-          <p class="price">$${p.sellingPrice}</p>
-          <p>Stock: ${p.stock}</p>
-          <button onclick="order('${p.name}', ${p.sellingPrice})">Order</button>
-        </div>
-      `;
-    });
-  }
+    box.innerHTML += `
+      <div class="card">
+        <img src="${img}">
+        <h4>${p.name}</h4>
+        <p>${p.category} / ${p.subcategory}</p>
+        <p class="price">$${p.sellingPrice}</p>
+        <p>Stock: ${p.stock}</p>
+        <button onclick="order('${p.name}',${p.sellingPrice})">Order</button>
+      </div>
+    `;
+  });
+}
 
-  function fillFilters(list) {
-    const cat = document.getElementById("category");
-    const sub = document.getElementById("subcategory");
+// Fill dropdowns
+function fillFilters(list){
+  const cat = document.getElementById("category");
+  const sub = document.getElementById("subcategory");
 
-    let cats = [...new Set(list.map(p => p.category))];
-    let subs = [...new Set(list.map(p => p.subcategory))];
+  let cats = [...new Set(list.map(p=>p.category))];
+  let subs = [...new Set(list.map(p=>p.subcategory))];
 
-    cats.forEach(c => {
-      cat.innerHTML += `<option value="${c}">${c}</option>`;
-    });
+  cats.forEach(c=>{
+    cat.innerHTML += `<option value="${c}">${c}</option>`;
+  });
 
-    subs.forEach(s => {
-      sub.innerHTML += `<option value="${s}">${s}</option>`;
-    });
-  }
+  subs.forEach(s=>{
+    sub.innerHTML += `<option value="${s}">${s}</option>`;
+  });
+}
 
-  // Search + filter
-  document.getElementById("search").addEventListener("input", filter);
-  document.getElementById("category").addEventListener("change", filter);
-  document.getElementById("subcategory").addEventListener("change", filter);
+// FILTER FIXED LOGIC
+function filter(){
+  let q = document.getElementById("search").value.toLowerCase();
+  let c = document.getElementById("category").value;
+  let s = document.getElementById("subcategory").value;
 
-  function filter() {
-    let q = document.getElementById("search").value.toLowerCase();
-    let c = document.getElementById("category").value;
-    let s = document.getElementById("subcategory").value;
+  let result = allProducts.filter(p=>{
+    return (
+      (!q || p.name.toLowerCase().includes(q)) &&
+      (!c || p.category === c) &&
+      (!s || p.subcategory === s)
+    );
+  });
 
-    let filtered = allProducts.filter(p => {
-      return (
-        (!q || p.name.toLowerCase().includes(q)) &&
-        (!c || p.category === c) &&
-        (!s || p.subcategory === s)
-      );
-    });
+  render(result);
+}
 
-    render(filtered);
-  }
+// EVENTS
+document.getElementById("search").addEventListener("input", filter);
 
-  // WhatsApp order
-  function order(name, price) {
-    let msg = `Order:\nProduct: ${name}\nPrice: ${price}`;
-    let url = `https://wa.me/YOUR_NUMBER?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-  }
+document.getElementById("category").addEventListener("change", function(){
+  document.getElementById("subcategory").value = "";
+  filter();
+});
 
-  loadProducts();
+document.getElementById("subcategory").addEventListener("change", filter);
+
+// WhatsApp order
+function order(name, price){
+  let msg = `Order:\nProduct: ${name}\nPrice: ${price}`;
+  let url = `https://wa.me/YOUR_NUMBER?text=${encodeURIComponent(msg)}`;
+  window.open(url,"_blank");
+}
+
+loadProducts();
 </script>
 
 </body>
