@@ -1,118 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>PrintFlow365 V3.0</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <meta charset="UTF-8">
+  <title>PrintFlow365 V4.0</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 
   <style>
-    body { font-family: Arial; padding: 10px; }
-    .box { max-width: 400px; margin: auto; }
-    input, button { width: 100%; padding: 10px; margin: 5px 0; }
-    .hidden { display: none; }
+    body { font-family: Arial; margin: 0; background: #f5f5f5; }
+    header { background: #111; color: #fff; padding: 10px; text-align: center; }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      flex-wrap: wrap;
+      background: #fff;
+    }
+
+    input, select {
+      padding: 8px;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .price {
+      color: green;
+      font-weight: bold;
+    }
+
+    button {
+      width: 100%;
+      padding: 6px;
+      margin-top: 5px;
+    }
   </style>
 </head>
-
 <body>
 
-<div id="loginBox" class="box">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+<header>
+  <h2>PrintFlow365 V4.0</h2>
+</header>
+
+<div class="controls">
+  <input id="search" placeholder="Search product...">
+
+  <select id="category">
+    <option value="">All Category</option>
+  </select>
+
+  <select id="subcategory">
+    <option value="">All Subcategory</option>
+  </select>
 </div>
 
-<div id="app" class="hidden box">
-  <h3>Welcome, <span id="userName"></span></h3>
-
-  <h4>Order Products</h4>
-  <input id="product" placeholder="Product name">
-  <input id="qty" placeholder="Quantity">
-  <button onclick="placeOrder()">Send WhatsApp Order</button>
-
-  <h4>Your Orders</h4>
-  <div id="orders"></div>
-
-  <button onclick="logout()">Logout</button>
-</div>
+<div class="grid" id="products"></div>
 
 <script>
+  // Firebase config (fill your own)
   const firebaseConfig = {
-  apiKey: "AIzaSy....",
-  authDomain: "printflow365.firebaseapp.com",
-  projectId: "printflow365",
-  storageBucket: "printflow365.appspot.com",
-  messagingSenderId: "752851933522",
-  appId: "1:752851933522:web:cb71d642a8b7ccf49ec28b"
-};
+    apiKey: "YOUR_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT",
+  };
+
   firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
   const db = firebase.firestore();
 
-  let currentUser = null;
+  let allProducts = [];
 
-  function login() {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-
-    auth.signInWithEmailAndPassword(email, pass)
-      .then(user => {
-        currentUser = user.user;
-        loadApp();
-      })
-      .catch(err => alert(err.message));
+  // Load products
+  async function loadProducts() {
+    const snap = await db.collection("products").get();
+    allProducts = snap.docs.map(doc => doc.data());
+    render(allProducts);
+    fillFilters(allProducts);
   }
 
-  function loadApp() {
-    document.getElementById('loginBox').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
+  function render(list) {
+    const box = document.getElementById("products");
+    box.innerHTML = "";
 
-    document.getElementById('userName').innerText = currentUser.email;
+    list.forEach(p => {
+      const img = (p.images && p.images.length) ? p.images[0] : "";
 
-    loadOrders();
+      box.innerHTML += `
+        <div class="card">
+          <img src="${img}" />
+          <h4>${p.name}</h4>
+          <p>${p.category} / ${p.subcategory}</p>
+          <p class="price">$${p.sellingPrice}</p>
+          <p>Stock: ${p.stock}</p>
+          <button onclick="order('${p.name}', ${p.sellingPrice})">Order</button>
+        </div>
+      `;
+    });
   }
 
-  function placeOrder() {
-    let product = document.getElementById('product').value;
-    let qty = document.getElementById('qty').value;
+  function fillFilters(list) {
+    const cat = document.getElementById("category");
+    const sub = document.getElementById("subcategory");
 
-    let msg = `Customer: ${currentUser.email}\nProduct: ${product}\nQty: ${qty}`;
+    let cats = [...new Set(list.map(p => p.category))];
+    let subs = [...new Set(list.map(p => p.subcategory))];
 
-    // WhatsApp send
-    window.open(`https://wa.me/971527581014?text=${encodeURIComponent(msg)}`);
-
-    // Save order
-    db.collection("orders").add({
-      email: currentUser.email,
-      product: product,
-      qty: qty,
-      time: new Date()
+    cats.forEach(c => {
+      cat.innerHTML += `<option value="${c}">${c}</option>`;
     });
 
-    loadOrders();
+    subs.forEach(s => {
+      sub.innerHTML += `<option value="${s}">${s}</option>`;
+    });
   }
 
-  function loadOrders() {
-    db.collection("orders")
-      .where("email", "==", currentUser.email)
-      .get()
-      .then(snapshot => {
-        let html = "";
-        snapshot.forEach(doc => {
-          let d = doc.data();
-          html += `<p>${d.product} - ${d.qty}</p>`;
-        });
-        document.getElementById('orders').innerHTML = html;
-      });
+  // Search + filter
+  document.getElementById("search").addEventListener("input", filter);
+  document.getElementById("category").addEventListener("change", filter);
+  document.getElementById("subcategory").addEventListener("change", filter);
+
+  function filter() {
+    let q = document.getElementById("search").value.toLowerCase();
+    let c = document.getElementById("category").value;
+    let s = document.getElementById("subcategory").value;
+
+    let filtered = allProducts.filter(p => {
+      return (
+        (!q || p.name.toLowerCase().includes(q)) &&
+        (!c || p.category === c) &&
+        (!s || p.subcategory === s)
+      );
+    });
+
+    render(filtered);
   }
 
-  function logout() {
-    auth.signOut();
-    location.reload();
+  // WhatsApp order
+  function order(name, price) {
+    let msg = `Order:\nProduct: ${name}\nPrice: ${price}`;
+    let url = `https://wa.me/YOUR_NUMBER?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
   }
+
+  loadProducts();
 </script>
 
 </body>
